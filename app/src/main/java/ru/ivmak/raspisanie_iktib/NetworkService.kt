@@ -5,8 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 class NetworkService {
-    private var mInstance: NetworkService? = null
-    private val BASE_URL = "http://165.22.28.187/schedule-api/"
+    private val BASE_URL = "http://165.22.28.187/"
     private var mRetrofit: Retrofit
 
     init {
@@ -16,12 +15,14 @@ class NetworkService {
             .build()
     }
 
-    fun getInstance(): NetworkService {
-        if (mInstance == null) {
-            mInstance = NetworkService()
+    companion object {
+        private var mInstance: NetworkService? = null
+        fun getInstance(): NetworkService {
+            if (mInstance == null) {
+                mInstance = NetworkService()
+            }
+            return mInstance as NetworkService
         }
-        return mInstance as NetworkService
     }
-
     fun getJSONApi() = mRetrofit.create(JSONPlaceHolderApi::class.java)
 }

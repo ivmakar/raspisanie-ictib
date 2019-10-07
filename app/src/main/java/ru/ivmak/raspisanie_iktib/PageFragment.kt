@@ -46,11 +46,13 @@ class PageFragment : Fragment() {
         rv.adapter = adapter
 
         viewModel.timeTable.observe(this, Observer {
-            textView.text = it.table.table[mPage + 2][0]
+            textView.text = it.table!!.table[mPage + 2][0]
             var data = ArrayList<DisplayData>()
-            data.add(DisplayData())
             for (i in 1..7) {
-                if (it.table.table[mPage + 2][i] == "") {
+                if (it.table!!.table[mPage + 2][i] == "") {
+                    if (data.isEmpty()) {
+                        data.add(DisplayData())
+                    }
                     if (data.last().isEmpty) {
                         data.last().windowCount++
 
@@ -59,7 +61,7 @@ class PageFragment : Fragment() {
                         data.last().windowCount++
                     }
                 } else {
-                    data.add(DisplayData(it.table.table[1][i], it.table.table[mPage + 2][i], i, false, 0))
+                    data.add(DisplayData(it.table!!.table[1][i], it.table!!.table[mPage + 2][i], i, false, 0))
                 }
             }
             adapter.setData(data)

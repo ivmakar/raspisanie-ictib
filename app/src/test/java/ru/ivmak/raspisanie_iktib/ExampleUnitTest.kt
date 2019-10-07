@@ -30,13 +30,18 @@ class ExampleUnitTest {
             "  },\n" +
             "  \"weeks\": [1, 2, 3, 4, 5, 6, 7, 8]\n" +
             "}"
+
+    val jsonStr2 = "{\"result\": \"no_entries\"}"
+
+    val jsonStr3 = "{\"choices\": [{\"name\": \"КТмо1-10\", \"id\": \"5d9ad5477dba0ef2f6bc1bee\", \"group\": \"26.htm\"}, {\"name\": \"КТмо1-12\", \"id\": \"5d9ad5477dba0ef2f6bc1e82\", \"group\": \"28.htm\"}, {\"name\": \"КТмо1-1\", \"id\": \"5d9ad5477dba0ef2f6bc20df\", \"group\": \"17.htm\"}, {\"name\": \"КТмо1-11\", \"id\": \"5d9ad5477dba0ef2f6bc2a69\", \"group\": \"27.htm\"}]}"
+
     @Test
     fun addition_isCorrect() {
         var gson = Gson()
         var myTimeTable = gson.fromJson<TimeTable>(jsonStr, TimeTable::class.java)
-        assertEquals("20.htm", myTimeTable.table.group)
-        assertEquals("Пары", myTimeTable.table.table[0][0])
-        assertEquals(1, myTimeTable.weeks[0])
+        assertEquals("20.htm", myTimeTable.table!!.group)
+        assertEquals("Пары", myTimeTable.table!!.table[0][0])
+        assertEquals(1, myTimeTable.weeks!![0])
     }
 
     @Test
@@ -64,5 +69,12 @@ class ExampleUnitTest {
         val l = lesson.find(str)!!.value
         assertEquals("Современные компьютерные технологии ", l)
 
+    }
+
+    @Test
+    fun testJson() {
+        var obj = Gson().fromJson<TimeTable>(jsonStr, TimeTable::class.java)
+        obj = Gson().fromJson<TimeTable>(jsonStr2, TimeTable::class.java)
+        obj = Gson().fromJson<TimeTable>(jsonStr3, TimeTable::class.java)
     }
 }
