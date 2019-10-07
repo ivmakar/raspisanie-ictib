@@ -14,33 +14,53 @@ class MainViewModel : ViewModel() {
 
     var timeTable = MutableLiveData<TimeTable>()
 
+    var choices = MutableLiveData<ArrayList<Choice>>()
 
 
-    private fun parseJson(jsonStr: String): TimeTable {
-        val gson = Gson()
-        return gson.fromJson<TimeTable>(jsonStr, TimeTable::class.java)
+    suspend fun searchByQuery(query: String) {
+        val tTable = getTimeTableFromAPI("?query=$query")
+        withContext(Dispatchers.Main) {
+            when {
+                tTable.result != null -> choices.value = arrayListOf()
+                tTable.choices != null -> choices.value = tTable.choices
+                tTable.table != null -> choices.value =
+                    arrayListOf(Choice(tTable.table!!.name, "", tTable.table!!.group))
+            }
+        }
     }
 
-    suspend fun getTimeTable(group: String): TimeTable {
-        val url = URL("http://165.22.28.187/schedule-api/?query=$group")
-
-        return parseJson(withContext(Dispatchers.IO){ httpRequest(url) })
+    suspend fun getTimeTable(group: String) {
+        val tTable = getTimeTableFromAPI("?group=$group")
+        withContext(Dispatchers.Main) {
+            if (tTable.table != null) {
+                timeTable.value = tTable
+            }
+        }
     }
 
-    suspend fun getTimeTableByWeek(group: String, week: Int): TimeTable {
-        val url = URL("http://165.22.28.187/schedule-api/?group=$group&week=$week")
-
-        return parseJson(withContext(Dispatchers.IO){ httpRequest(url) })
+    suspend fun getTimeTableByWeek(group: String, week: Int) {
+        val tTable = getTimeTableFromAPI("?group=$group&week=$week")
+        withContext(Dispatchers.Main) {
+            if (tTable.table != null) {
+                timeTable.value = tTable
+            }
+        }
     }
+
+    private fun parseJson(jsonStr: String): TimeTable = Gson().fromJson<TimeTable>(jsonStr, TimeTable::class.java)
+
+    private suspend fun getTimeTableFromAPI(params: String): TimeTable =
+        parseJson(withContext(Dispatchers.IO){
+            httpRequest(
+                URL("http://165.22.28.187/schedule-api/$params")
+            )
+        })
 
     private fun httpRequest(url: URL): String {
         val response = StringBuffer()
         with(url.openConnection() as HttpURLConnection) {
             // optional default is GET
             requestMethod = "GET"
-
-            println("URL : $url")
-            println("Response Code : $responseCode")
 
             BufferedReader(InputStreamReader(inputStream)).use {
 

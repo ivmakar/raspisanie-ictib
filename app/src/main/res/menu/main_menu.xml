@@ -3,11 +3,6 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="ru.example.ivan.ulikirostov.MainActivity">
-    <item android:id="@+id/search"
-          android:icon="@android:drawable/ic_menu_search"
-          app:showAsAction="always|collapseActionView"
-          app:actionViewClass="androidx.appcompat.widget.SearchView"
-          android:title="Найти"/>
     <item android:id="@+id/select_week"
           android:title=""
           android:orderInCategory="100"
