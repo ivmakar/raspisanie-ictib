@@ -17,6 +17,16 @@ class MainViewModel : ViewModel() {
     var choices = MutableLiveData<ArrayList<Choice>>()
 
 
+    suspend fun initTimeTable(data: String) {
+        val tTable = parseJson(data)
+        if (tTable.table != null) {
+            withContext(Dispatchers.Main) {
+                timeTable.value = tTable
+            }
+            getTimeTable(tTable.table!!.group)
+        }
+    }
+
     suspend fun searchByQuery(query: String) {
         val tTable = getTimeTableFromAPI("?query=$query")
         withContext(Dispatchers.Main) {
