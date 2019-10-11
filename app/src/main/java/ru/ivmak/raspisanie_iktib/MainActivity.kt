@@ -1,6 +1,7 @@
 package ru.ivmak.raspisanie_iktib
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -24,7 +25,9 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.gson.Gson
 
+const val LAST_TT = "last_time_table"
 
 class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
@@ -85,6 +88,7 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
         viewModel.timeTable.observe(this, Observer {
             initAppBar(it)
+            saveText(Gson().toJson(it))
         })
 
         val searchEditText = findViewById<TextInputEditText>(R.id.search_edit_text)
@@ -100,6 +104,10 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
             }
 
         })
+
+        GlobalScope.launch {
+            viewModel.initTimeTable(loadText())
+        }
 
     }
 
@@ -194,10 +202,20 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
                 popup.show()
             }
-//            R.id.search -> {
-//
-//            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun saveText(data: String) {
+        val sPref = getPreferences(MODE_PRIVATE);
+        val ed: SharedPreferences.Editor = sPref.edit();
+        ed.putString(LAST_TT, data);
+        ed.commit();
+    }
+
+    fun loadText(): String {
+        val sPref = getPreferences(MODE_PRIVATE);
+        val savedText: String = sPref.getString(LAST_TT, "{\"result\": \"no_entries\"}");
+        return savedText
     }
 }
