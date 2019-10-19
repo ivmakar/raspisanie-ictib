@@ -109,9 +109,12 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
             viewModel.initTimeTable(loadText())
         }
 
+        verifyAvailableNetwork()
+
     }
 
     fun verifyAvailableNetwork():Boolean{
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(MainViewModel::class.java) }
         val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo= connectivityManager.activeNetworkInfo
         val isConnect = networkInfo!=null && networkInfo.isConnected
@@ -119,8 +122,10 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
         if (!isConnect) {
             textIsConnect.visibility = View.VISIBLE
             adapter.setData(arrayListOf())
+            viewModel.isConnection = false
         } else {
             textIsConnect.visibility = View.INVISIBLE
+            viewModel.isConnection = true
         }
         return isConnect
     }

@@ -15,6 +15,8 @@ class MainViewModel : ViewModel() {
     var timeTable = MutableLiveData<TimeTable>()
 
     var choices = MutableLiveData<ArrayList<Choice>>()
+    
+    var isConnection = false
 
 
     suspend fun initTimeTable(data: String) {
@@ -23,7 +25,9 @@ class MainViewModel : ViewModel() {
             withContext(Dispatchers.Main) {
                 timeTable.value = tTable
             }
-            getTimeTable(tTable.table!!.group)
+            if (isConnection) {
+                getTimeTable(tTable.table!!.group)
+            }
         }
     }
 
