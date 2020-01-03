@@ -34,15 +34,7 @@ class MyAdapter(private var data: ArrayList<DisplayData>) : RecyclerView.Adapter
         fun bind(data: DisplayData) {
             if (data.isEmpty) {
                 body.visibility = View.GONE
-                if (data.windowCount == 1) {
-                    time.text = data.windowCount.toString() + " окно"
-                }
-                if (data.windowCount > 4) {
-                    time.text = data.windowCount.toString() + " окон"
-                }
-                if (data.windowCount > 1 && data.windowCount < 5) {
-                    time.text = data.windowCount.toString() + " окна"
-                }
+                time.text = "Окно"
             } else {
                 body.visibility = View.VISIBLE
                 time.text = data.time

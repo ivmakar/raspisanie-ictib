@@ -36,6 +36,23 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     private var adapter = DraverRVAdapter(arrayListOf(), this)
     private lateinit var draverRV: RecyclerView
 
+    fun verifyAvailableNetwork():Boolean{
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(MainViewModel::class.java) }
+        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo= connectivityManager.activeNetworkInfo
+        val isConnect = networkInfo!=null && networkInfo.isConnected
+        val textIsConnect = findViewById<TextView>(R.id.text_unconnect)
+        if (!isConnect) {
+            textIsConnect.visibility = View.VISIBLE
+            adapter.setData(arrayListOf())
+            viewModel.isConnection = false
+        } else {
+            textIsConnect.visibility = View.INVISIBLE
+            viewModel.isConnection = true
+        }
+        return isConnect
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -107,27 +124,11 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
         GlobalScope.launch {
             viewModel.initTimeTable(loadText())
+
         }
 
         verifyAvailableNetwork()
 
-    }
-
-    fun verifyAvailableNetwork():Boolean{
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(MainViewModel::class.java) }
-        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo= connectivityManager.activeNetworkInfo
-        val isConnect = networkInfo!=null && networkInfo.isConnected
-        val textIsConnect = findViewById<TextView>(R.id.text_unconnect)
-        if (!isConnect) {
-            textIsConnect.visibility = View.VISIBLE
-            adapter.setData(arrayListOf())
-            viewModel.isConnection = false
-        } else {
-            textIsConnect.visibility = View.INVISIBLE
-            viewModel.isConnection = true
-        }
-        return isConnect
     }
 
     override fun onItemClick(data: Choice) {
@@ -179,6 +180,7 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     private fun initAppBar(timeTable: TimeTable) {
         timeTable.table?.let { table -> menu?.let { it.getItem(0).title = table.week.toString() + " неделя" } }
         timeTable.table?.let { title = it.name }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

@@ -50,16 +50,7 @@ class PageFragment : Fragment() {
             var data = ArrayList<DisplayData>()
             for (i in 1..7) {
                 if (it.table!!.table[mPage + 2][i] == "") {
-                    if (data.isEmpty()) {
-                        data.add(DisplayData())
-                    }
-                    if (data.last().isEmpty) {
-                        data.last().windowCount++
-
-                    } else {
-                        data.add(DisplayData())
-                        data.last().windowCount++
-                    }
+                    data.add(DisplayData())
                 } else {
                     data.add(DisplayData(it.table!!.table[1][i], it.table!!.table[mPage + 2][i], i, false, 0))
                 }
