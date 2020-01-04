@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import org.junit.Test
 
 import org.junit.Assert.*
+import java.util.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -69,6 +70,22 @@ class ExampleUnitTest {
         val l = lesson.find(str)!!.value
         assertEquals("Современные компьютерные технологии ", l)
 
+    }
+
+    @Test
+    fun testDateRegEx() {
+        var str = "Пнд,30  сентября"
+        val dayRegex = Regex("""([А-Я][а-я][а-я]),([0-9]+)\s+([а-я]+)""")
+        val arr = dayRegex.findAll(str, 0)
+        val (day, num, month) = arr.toList()[0].destructured
+
+        assertEquals("Пнд", day)
+        assertEquals("30", num)
+        assertEquals("сентября", month)
+
+        val date = Date()
+        assertEquals(4, date.date)
+        assertEquals(0, date.month)
     }
 
     @Test

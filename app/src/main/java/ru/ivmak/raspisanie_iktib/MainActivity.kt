@@ -86,6 +86,8 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
         viewPager.adapter = SimpleFragmentPagerAdapter(supportFragmentManager)
         tabLayout.setupWithViewPager(viewPager)
 
+
+
         draverRV = findViewById(R.id.draver_rv)
         draverRV.layoutManager = LinearLayoutManager(this)
         draverRV.adapter = adapter
@@ -180,7 +182,9 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     private fun initAppBar(timeTable: TimeTable) {
         timeTable.table?.let { table -> menu?.let { it.getItem(0).title = table.week.toString() + " неделя" } }
         timeTable.table?.let { title = it.name }
-
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(MainViewModel::class.java) }
+        val viewPager = findViewById<ViewPager>(R.id.viewpager)
+        timeTable.table?.let { viewPager.currentItem = viewModel.isDayOfWeekOpen(it) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

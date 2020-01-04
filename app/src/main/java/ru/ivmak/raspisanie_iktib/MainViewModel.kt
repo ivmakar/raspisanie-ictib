@@ -9,6 +9,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainViewModel : ViewModel() {
 
@@ -88,4 +90,22 @@ class MainViewModel : ViewModel() {
         }
         return response.toString()
     }
+
+    fun isDayOfWeekOpen(table: Table): Int {
+        val months = arrayOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря")
+        val date = Date()
+        for (i in 0..5) {
+            var str = table.table[i + 2][0]
+            val dayRegex = Regex("""([А-Я][а-я][а-я]),([0-9]+)\s+([а-я]+)""")
+            val arr = dayRegex.findAll(str, 0)
+            val (day, num, month) = arr.toList()[0].destructured
+            if (Integer.parseInt(num) == date.date) {
+                if (months[date.month] == month) {
+                    return i
+                }
+            }
+        }
+        return 0
+    }
+
 }
