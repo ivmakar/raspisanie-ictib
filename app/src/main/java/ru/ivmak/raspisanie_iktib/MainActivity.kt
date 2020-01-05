@@ -1,6 +1,7 @@
 package ru.ivmak.raspisanie_iktib
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
@@ -22,12 +24,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
-
-const val LAST_TT = "last_time_table"
 
 class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
@@ -85,8 +86,6 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
         viewPager.adapter = SimpleFragmentPagerAdapter(supportFragmentManager)
         tabLayout.setupWithViewPager(viewPager)
-
-
 
         draverRV = findViewById(R.id.draver_rv)
         draverRV.layoutManager = LinearLayoutManager(this)
@@ -213,20 +212,24 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
                 popup.show()
             }
+            R.id.settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     fun saveText(data: String) {
-        val sPref = getPreferences(MODE_PRIVATE);
-        val ed: SharedPreferences.Editor = sPref.edit();
-        ed.putString(LAST_TT, data);
-        ed.commit();
+        val sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
+        val ed: SharedPreferences.Editor = sPref.edit()
+        ed.putString(Constants.LAST_TT, data)
+        ed.commit()
     }
 
     fun loadText(): String {
-        val sPref = getPreferences(MODE_PRIVATE);
-        val savedText: String = sPref.getString(LAST_TT, "{\"result\": \"no_entries\"}");
+        val sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
+        val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}")
         return savedText
     }
 }

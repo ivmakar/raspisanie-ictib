@@ -30,6 +30,7 @@ class MyAdapter(private var data: ArrayList<DisplayData>) : RecyclerView.Adapter
     class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val time = view.time
         val body = view.body
+        val num = view.num_of_pair
 
         fun bind(data: DisplayData) {
             if (data.isEmpty) {
@@ -40,6 +41,7 @@ class MyAdapter(private var data: ArrayList<DisplayData>) : RecyclerView.Adapter
                 time.text = data.time
                 body.text = data.body
             }
+            num.text = data.numOfPair.toString()
         }
     }
 }

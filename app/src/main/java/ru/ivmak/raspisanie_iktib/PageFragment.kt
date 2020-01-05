@@ -54,6 +54,7 @@ class PageFragment : Fragment() {
                 } else {
                     data.add(DisplayData(it.table!!.table[1][i], it.table!!.table[mPage + 2][i], i, false, 0))
                 }
+                data.last().numOfPair = i
             }
             adapter.setData(data)
             adapter.notifyDataSetChanged()

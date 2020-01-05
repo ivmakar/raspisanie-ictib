@@ -5,5 +5,5 @@ class DisplayData(
     val body: String = "",
     val count: Int = 0,
     val isEmpty: Boolean = true,
-    var windowCount: Int = 0
+    var numOfPair: Int = 0
 )
