@@ -2,7 +2,9 @@ package ru.ivmak.raspisanie_iktib
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +25,7 @@ import java.util.concurrent.TimeUnit
 
 class NotifyWorker : Worker() {
 
-    val TAG = "NotifyWorker"
+    val TAG = Constants.WORKER_TAG
     lateinit var timeTable: TimeTable
 
     override fun doWork(): WorkerResult {
@@ -38,19 +40,21 @@ class NotifyWorker : Worker() {
 
         val dayOfWeek = isDayOfWeekOpen(timeTable.table!!)
         if (dayOfWeek == 7) {
-            showNotification("У вас сегодня нет пар)")
+            showNotification("Отдыхайте!", "У вас сегодня нет пар)")
         }
         else if (dayOfWeek >= 0) {
             var pairCount = 0
             var firstPair = ""
-            for (i in 6 downTo 0) {
+            for (i in 7 downTo 1) {
                 if (timeTable.table!!.table[dayOfWeek + 2][i] != "") {
                     firstPair = timeTable.table!!.table[0][i]
                     pairCount++
                 }
             }
 
-            showNotification(if (pairCount == 0) "У вас сегодня нет пар)" else "У вас сегодня $pairCount пар. Первая пара - $firstPair.")
+            showNotification(if (pairCount == 0) "Отдыхайте!" else "Cегодня $pairCount пар", if (pairCount == 0) "У вас сегодня нет пар)" else "Первая пара - $firstPair.")
+        } else if (dayOfWeek == -1) {
+            showNotification("Ошибка", "Не удалось загрузить расписание")
         }
 
         restartWorker()
@@ -65,31 +69,36 @@ class NotifyWorker : Worker() {
             .putString(Constants.LAST_TT, sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}"))
             .build()
 
-        WorkManager.getInstance().cancelAllWorkByTag("NotifyWorker")
+        WorkManager.getInstance().cancelAllWorkByTag(Constants.WORKER_TAG)
         val myWorkRequest = OneTimeWorkRequest.Builder(NotifyWorker::class.java)
             .setInitialDelay(24, TimeUnit.HOURS)
             .setInputData(data)
+            .addTag(Constants.WORKER_TAG)
             .build()
         WorkManager.getInstance().enqueue(myWorkRequest)
 
     }
 
-    private fun showNotification(str: String) {
+    private fun showNotification(title: String, text: String) {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 Constants.NOTIFICATION_CHANNEL_ID,
-                str,
+                Constants.NOTIFICATION_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT)
 
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
+        val intent = Intent(applicationContext, MainActivity::class.java)
+
         val notification = NotificationCompat.Builder(applicationContext, Constants.NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher)
+            .setSmallIcon(R.drawable.baseline_today_black_48)
             .setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.ic_launcher))
-            .setContentTitle(str)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setContentIntent(PendingIntent.getActivity(applicationContext,0,intent,0))
 
         notificationManager.notify(1, notification.build())
 
