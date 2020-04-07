@@ -28,6 +28,6 @@
                 app:title="@string/notify_time_title"
                 app:useSimpleSummaryProvider="true" />
 
-            </PreferenceCategory>
+    </PreferenceCategory>
 
-        </PreferenceScreen>
+</PreferenceScreen>

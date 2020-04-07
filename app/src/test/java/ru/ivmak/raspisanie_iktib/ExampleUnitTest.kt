@@ -94,4 +94,13 @@ class ExampleUnitTest {
         obj = Gson().fromJson<TimeTable>(jsonStr2, TimeTable::class.java)
         obj = Gson().fromJson<TimeTable>(jsonStr3, TimeTable::class.java)
     }
+
+    @Test
+    fun testGetDuration() {
+        assertEquals(60*60*1000, Utils.getDuration("07:00"))
+        assertEquals(24*60*60*1000, Utils.getDuration("06:00"))
+        assertEquals(23*60*60*1000, Utils.getDuration("05:00"))
+        assertEquals(60*1000, Utils.getDuration("06:01"))
+
+    }
 }

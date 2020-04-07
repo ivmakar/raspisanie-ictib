@@ -64,18 +64,7 @@ class NotifyWorker : Worker() {
 
     private fun restartWorker() {
 
-        val sPref = applicationContext.getSharedPreferences(Constants.APP_PREF, AppCompatActivity.MODE_PRIVATE)
-        val data = Data.Builder()
-            .putString(Constants.LAST_TT, sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}"))
-            .build()
-
-        WorkManager.getInstance().cancelAllWorkByTag(Constants.WORKER_TAG)
-        val myWorkRequest = OneTimeWorkRequest.Builder(NotifyWorker::class.java)
-            .setInitialDelay(24, TimeUnit.HOURS)
-            .setInputData(data)
-            .addTag(Constants.WORKER_TAG)
-            .build()
-        WorkManager.getInstance().enqueue(myWorkRequest)
+        Utils.scheduleNotification(applicationContext, (24*60*60*1000).toLong())
 
     }
 

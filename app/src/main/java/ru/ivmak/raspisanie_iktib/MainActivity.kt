@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     private var adapter = DraverRVAdapter(arrayListOf(), this)
     private lateinit var draverRV: RecyclerView
 
+    private lateinit var sPref: SharedPreferences
+
     fun verifyAvailableNetwork():Boolean{
         val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(MainViewModel::class.java) }
         val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -57,6 +59,8 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -123,13 +127,24 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
 
         })
 
+        initNotifications()
+
         GlobalScope.launch {
             viewModel.initTimeTable(loadText())
-
         }
 
         verifyAvailableNetwork()
+    }
 
+    fun initNotifications() {
+        val time = sPref.getString(Constants.PREF_NOTIF_TIME, "")
+        if (time == "") {
+            sPref.edit()
+                .putString(Constants.PREF_NOTIF_TIME, Constants.DEF_NOTIF_TIME)
+                .apply()
+
+            Utils.scheduleNotification(this, Utils.getDuration(time))
+        }
     }
 
     override fun onItemClick(data: Choice) {
@@ -213,7 +228,7 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
                 popup.show()
             }
             R.id.settings -> {
-                val intent = Intent(this, SettingsActivity::class.java)
+                val intent = Intent(this, SettingsTActivity::class.java)
                 startActivity(intent)
             }
         }
@@ -221,14 +236,12 @@ class MainActivity : AppCompatActivity(), DraverRVAdapter.OnItemClickListener {
     }
 
     fun saveText(data: String) {
-        val sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
         val ed: SharedPreferences.Editor = sPref.edit()
         ed.putString(Constants.LAST_TT, data)
         ed.commit()
     }
 
     fun loadText(): String {
-        val sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
         val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}")
         return savedText
     }
