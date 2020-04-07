@@ -47,12 +47,17 @@ class NotifyWorker : Worker() {
             var firstPair = ""
             for (i in 7 downTo 1) {
                 if (timeTable.table!!.table[dayOfWeek + 2][i] != "") {
-                    firstPair = timeTable.table!!.table[0][i]
+                    firstPair = timeTable.table!!.table[1][i]
                     pairCount++
                 }
             }
 
-            showNotification(if (pairCount == 0) "Отдыхайте!" else "Cегодня $pairCount пар", if (pairCount == 0) "У вас сегодня нет пар)" else "Первая пара - $firstPair.")
+            when (pairCount) {
+                0 -> showNotification("Отдыхайте!", "У вас сегодня нет пар)")
+                1 -> showNotification("Cегодня $pairCount пара", "Первая пара - $firstPair.")
+                2, 3, 4 -> showNotification("Cегодня $pairCount пары", "Первая пара - $firstPair.")
+                else -> showNotification("Cегодня $pairCount пар", "Первая пара - $firstPair.")
+            }
         } else if (dayOfWeek == -1) {
             showNotification("Ошибка", "Не удалось загрузить расписание")
         }
@@ -85,12 +90,12 @@ class NotifyWorker : Worker() {
         val notification = NotificationCompat.Builder(applicationContext, Constants.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.baseline_today_black_48)
             .setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.ic_launcher))
+            .setAutoCancel(true)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(PendingIntent.getActivity(applicationContext,0,intent,0))
 
         notificationManager.notify(1, notification.build())
-
     }
 
     fun getTimeTable(group: String) {
