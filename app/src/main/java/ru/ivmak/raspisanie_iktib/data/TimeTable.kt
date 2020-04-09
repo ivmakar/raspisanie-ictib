@@ -1,4 +1,7 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.data
+
+import ru.ivmak.raspisanie_iktib.data.Choice
+import ru.ivmak.raspisanie_iktib.data.Table
 
 class TimeTable (
     var table: Table?,

@@ -1,19 +1,22 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.rv_adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.rv_item.view.*
+import ru.ivmak.raspisanie_iktib.data.DisplayData
+import ru.ivmak.raspisanie_iktib.R
 
-class MyAdapter(private var data: ArrayList<DisplayData>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+class TimeTableRvAdapter(private var data: ArrayList<DisplayData>) : RecyclerView.Adapter<TimeTableRvAdapter.MyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.rv_item, parent, false)
 
-        return MyViewHolder(view)
+        return MyViewHolder(
+            view
+        )
     }
 
     override fun getItemCount(): Int = data.size

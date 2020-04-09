@@ -1,4 +1,4 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.screens.main
 
 
 import android.os.Bundle
@@ -11,6 +11,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import ru.ivmak.raspisanie_iktib.data.DisplayData
+import ru.ivmak.raspisanie_iktib.ui.rv_adapters.TimeTableRvAdapter
+import ru.ivmak.raspisanie_iktib.R
+import ru.ivmak.raspisanie_iktib.data.Table
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -27,7 +31,8 @@ class PageFragment : Fragment() {
 
     private var mPage: Int = 0
     private lateinit var table: Table
-    private var adapter = MyAdapter(arrayListOf())
+    private var adapter =
+        TimeTableRvAdapter(arrayListOf())
     private lateinit var rv: RecyclerView
 
     override fun onCreateView(
@@ -37,7 +42,8 @@ class PageFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_page, container, false)
 
-        val viewModel: MainViewModel = activity?.let { ViewModelProviders.of(it).get(MainViewModel::class.java) }!!
+        val viewModel: MainViewModel = activity?.let { ViewModelProviders.of(it).get(
+            MainViewModel::class.java) }!!
 
         val textView = view.findViewById<TextView>(R.id.textView)
 
@@ -52,7 +58,15 @@ class PageFragment : Fragment() {
                 if (it.table!!.table[mPage + 2][i] == "") {
                     data.add(DisplayData())
                 } else {
-                    data.add(DisplayData(it.table!!.table[1][i], it.table!!.table[mPage + 2][i], i, false, 0))
+                    data.add(
+                        DisplayData(
+                            it.table!!.table[1][i],
+                            it.table!!.table[mPage + 2][i],
+                            i,
+                            false,
+                            0
+                        )
+                    )
                 }
                 data.last().numOfPair = i
             }
@@ -68,7 +82,8 @@ class PageFragment : Fragment() {
         fun newInstance(page: Int): PageFragment {
             val args = Bundle()
             args.putInt(ARG_PAGE, page)
-            val fragment = PageFragment()
+            val fragment =
+                PageFragment()
             fragment.arguments = args
             return fragment
         }

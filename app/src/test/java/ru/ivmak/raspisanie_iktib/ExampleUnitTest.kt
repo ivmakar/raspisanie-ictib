@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import org.junit.Test
 
 import org.junit.Assert.*
+import ru.ivmak.raspisanie_iktib.data.TimeTable
+import ru.ivmak.raspisanie_iktib.utils.Functions
 import java.util.*
 
 /**
@@ -97,10 +99,10 @@ class ExampleUnitTest {
 
     @Test
     fun testGetDuration() {
-        assertEquals(60*60*1000, Utils.getDuration("07:00"))
-        assertEquals(24*60*60*1000, Utils.getDuration("06:00"))
-        assertEquals(23*60*60*1000, Utils.getDuration("05:00"))
-        assertEquals(60*1000, Utils.getDuration("06:01"))
+        assertEquals(60*60*1000, Functions.getDuration("07:00"))
+        assertEquals(24*60*60*1000, Functions.getDuration("06:00"))
+        assertEquals(23*60*60*1000, Functions.getDuration("05:00"))
+        assertEquals(60*1000, Functions.getDuration("06:01"))
 
     }
 }

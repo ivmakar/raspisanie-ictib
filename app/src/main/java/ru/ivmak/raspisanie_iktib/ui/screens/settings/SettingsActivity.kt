@@ -1,21 +1,20 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.screens.settings
 
 import android.app.TimePickerDialog
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import ru.ivmak.raspisanie_iktib.utils.Constants
+import ru.ivmak.raspisanie_iktib.R
+import ru.ivmak.raspisanie_iktib.utils.Functions
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
-class SettingsTActivity : AppCompatActivity() {
+class SettingsActivity : AppCompatActivity() {
 
     private lateinit var reminderSwitch: Switch
     private lateinit var timeLayout: LinearLayout
@@ -25,14 +24,17 @@ class SettingsTActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings_t)
+        setContentView(R.layout.activity_settings)
 
         reminderSwitch = findViewById(R.id.reminder_sw)
         timeLayout = findViewById(R.id.time_layout)
         timeTextView = findViewById(R.id.time_tv_value)
 
         val prefs = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
-        val time = prefs.getString(Constants.PREF_NOTIF_TIME, Constants.DEF_NOTIF_TIME)
+        val time = prefs.getString(
+            Constants.PREF_NOTIF_TIME,
+            Constants.DEF_NOTIF_TIME
+        )
         timeTextView.text = time
 
         timeLayout.setOnClickListener {
@@ -78,6 +80,9 @@ class SettingsTActivity : AppCompatActivity() {
             return
         }
 
-        Utils.scheduleNotification(this, Utils.getDuration(time))
+        Functions.scheduleNotification(
+            this,
+            Functions.getDuration(time)
+        )
     }
 }

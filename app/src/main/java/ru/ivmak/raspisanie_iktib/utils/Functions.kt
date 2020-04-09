@@ -1,21 +1,24 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.utils
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import ru.ivmak.raspisanie_iktib.utils.notification.NotifyWorker
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class Utils {
+class Functions {
 
     companion object {
         fun scheduleNotification(context: Context, duration: Long) {
             val sPref = context.getSharedPreferences(Constants.APP_PREF, AppCompatActivity.MODE_PRIVATE)
             val data = Data.Builder()
-                .putString(Constants.LAST_TT, sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}"))
+                .putString(
+                    Constants.LAST_TT, sPref.getString(
+                        Constants.LAST_TT, "{\"result\": \"no_entries\"}"))
                 .build()
 
             WorkManager.getInstance().cancelAllWorkByTag(Constants.WORKER_TAG)

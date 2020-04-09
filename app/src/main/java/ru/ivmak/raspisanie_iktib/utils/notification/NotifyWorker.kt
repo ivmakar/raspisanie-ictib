@@ -1,4 +1,4 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.utils.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,21 +7,20 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
-import androidx.preference.PreferenceManager
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import androidx.work.Worker
 import com.google.gson.Gson
+import ru.ivmak.raspisanie_iktib.R
+import ru.ivmak.raspisanie_iktib.utils.Functions
+import ru.ivmak.raspisanie_iktib.data.Table
+import ru.ivmak.raspisanie_iktib.data.TimeTable
+import ru.ivmak.raspisanie_iktib.ui.screens.main.MainActivity
+import ru.ivmak.raspisanie_iktib.utils.Constants
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class NotifyWorker : Worker() {
 
@@ -69,7 +68,10 @@ class NotifyWorker : Worker() {
 
     private fun restartWorker() {
 
-        Utils.scheduleNotification(applicationContext, (24*60*60*1000).toLong())
+        Functions.scheduleNotification(
+            applicationContext,
+            (24 * 60 * 60 * 1000).toLong()
+        )
 
     }
 
@@ -89,7 +91,9 @@ class NotifyWorker : Worker() {
 
         val notification = NotificationCompat.Builder(applicationContext, Constants.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.baseline_today_black_48)
-            .setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources, R.drawable.ic_launcher))
+            .setLargeIcon(BitmapFactory.decodeResource(applicationContext.resources,
+                R.drawable.ic_launcher
+            ))
             .setAutoCancel(true)
             .setContentTitle(title)
             .setContentText(text)

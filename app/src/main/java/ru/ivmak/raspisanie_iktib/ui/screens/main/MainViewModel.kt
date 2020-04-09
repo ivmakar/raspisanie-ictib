@@ -1,10 +1,13 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.screens.main
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.ivmak.raspisanie_iktib.data.Choice
+import ru.ivmak.raspisanie_iktib.data.Table
+import ru.ivmak.raspisanie_iktib.data.TimeTable
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -40,7 +43,13 @@ class MainViewModel : ViewModel() {
                 tTable.result != null -> choices.value = arrayListOf()
                 tTable.choices != null -> choices.value = tTable.choices
                 tTable.table != null -> choices.value =
-                    arrayListOf(Choice(tTable.table!!.name, "", tTable.table!!.group))
+                    arrayListOf(
+                        Choice(
+                            tTable.table!!.name,
+                            "",
+                            tTable.table!!.group
+                        )
+                    )
             }
         }
     }

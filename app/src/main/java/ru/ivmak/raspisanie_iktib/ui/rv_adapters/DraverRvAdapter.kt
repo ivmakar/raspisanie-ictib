@@ -1,19 +1,22 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.rv_adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.draver_rv_item.view.*
+import ru.ivmak.raspisanie_iktib.data.Choice
+import ru.ivmak.raspisanie_iktib.R
 
-class DraverRVAdapter(private var data: ArrayList<Choice>, val listener: OnItemClickListener) : RecyclerView.Adapter<DraverRVAdapter.DraverViewHolder>() {
+class DraverRvAdapter(private var data: ArrayList<Choice>, val listener: OnItemClickListener) : RecyclerView.Adapter<DraverRvAdapter.DraverViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DraverViewHolder {
         val view: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.draver_rv_item, parent, false)
 
-        return DraverViewHolder(view)
+        return DraverViewHolder(
+            view
+        )
     }
 
     interface OnItemClickListener {

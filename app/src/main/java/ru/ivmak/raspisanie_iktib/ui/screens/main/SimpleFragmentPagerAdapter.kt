@@ -1,9 +1,10 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.ui.screens.main
 
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import ru.ivmak.raspisanie_iktib.ui.screens.main.PageFragment
 
 class SimpleFragmentPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
     val PAGE_COUNT = 6

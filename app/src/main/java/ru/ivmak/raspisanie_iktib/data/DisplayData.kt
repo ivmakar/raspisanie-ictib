@@ -1,4 +1,4 @@
-package ru.ivmak.raspisanie_iktib
+package ru.ivmak.raspisanie_iktib.data
 
 class DisplayData(
     val time: String = "",
