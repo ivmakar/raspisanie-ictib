@@ -42,11 +42,7 @@ class MainActivity : AppCompatActivity(),
 
     private var menu: Menu? = null
     lateinit var toolbar: Toolbar
-    private var adapter =
-        DraverRvAdapter(
-            arrayListOf(),
-            this
-        )
+    private var adapter = DraverRvAdapter(arrayListOf(),this)
     private lateinit var draverRV: RecyclerView
 
     private lateinit var sPref: SharedPreferences
