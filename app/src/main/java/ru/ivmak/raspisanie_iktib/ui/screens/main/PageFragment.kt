@@ -8,16 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import dagger.android.support.DaggerFragment
 import ru.ivmak.raspisanie_iktib.data.DisplayData
 import ru.ivmak.raspisanie_iktib.ui.rv_adapters.TimeTableRvAdapter
 import ru.ivmak.raspisanie_iktib.R
 import ru.ivmak.raspisanie_iktib.data.Table
-import javax.inject.Inject
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -29,26 +26,21 @@ private const val ARG_PAGE = "ARG_PAGE"
  * A simple [Fragment] subclass.
  *
  */
-class PageFragment : DaggerFragment() {
+class PageFragment : Fragment() {
 
 
     private var mPage: Int = 0
     private lateinit var table: Table
-    private var adapter =
-        TimeTableRvAdapter(arrayListOf())
+    private var adapter = TimeTableRvAdapter(arrayListOf())
     private lateinit var rv: RecyclerView
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    val dataSingleton = MainDataSingleton.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_page, container, false)
-
-        val viewModel: MainViewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
 
         val textView = view.findViewById<TextView>(R.id.textView)
 
@@ -56,27 +48,29 @@ class PageFragment : DaggerFragment() {
         rv.layoutManager = LinearLayoutManager(this.context)
         rv.adapter = adapter
 
-        viewModel.timeTable.observe(this, Observer {
-            textView.text = it.table!!.table[mPage + 2][0]
-            var data = ArrayList<DisplayData>()
-            for (i in 1..7) {
-                if (it.table!!.table[mPage + 2][i] == "") {
-                    data.add(DisplayData())
-                } else {
-                    data.add(
-                        DisplayData(
-                            it.table!!.table[1][i],
-                            it.table!!.table[mPage + 2][i],
-                            i,
-                            false,
-                            0
+        dataSingleton.timeTable.observe(this, Observer {
+            if (it.table != null) {
+                textView.text = it.table!!.table[mPage + 2][0]
+                var data = ArrayList<DisplayData>()
+                for (i in 1..7) {
+                    if (it.table!!.table[mPage + 2][i] == "") {
+                        data.add(DisplayData())
+                    } else {
+                        data.add(
+                            DisplayData(
+                                it.table!!.table[1][i],
+                                it.table!!.table[mPage + 2][i],
+                                i,
+                                false,
+                                0
+                            )
                         )
-                    )
+                    }
+                    data.last().numOfPair = i
                 }
-                data.last().numOfPair = i
+                adapter.setData(data)
+                adapter.notifyDataSetChanged()
             }
-            adapter.setData(data)
-            adapter.notifyDataSetChanged()
         })
 
         return view

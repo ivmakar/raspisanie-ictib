@@ -14,7 +14,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.lifecycle.ViewModelProviders
+import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.*
@@ -23,11 +23,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
-import dagger.android.support.DaggerAppCompatActivity
 import ru.ivmak.raspisanie_iktib.*
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
@@ -35,9 +33,8 @@ import ru.ivmak.raspisanie_iktib.ui.rv_adapters.DraverRvAdapter
 import ru.ivmak.raspisanie_iktib.ui.screens.settings.SettingsActivity
 import ru.ivmak.raspisanie_iktib.utils.Constants
 import ru.ivmak.raspisanie_iktib.utils.Functions
-import javax.inject.Inject
 
-class MainActivity : DaggerAppCompatActivity(),
+class MainActivity : AppCompatActivity(),
     DraverRvAdapter.OnItemClickListener {
 
     private var menu: Menu? = null
@@ -51,8 +48,7 @@ class MainActivity : DaggerAppCompatActivity(),
     private lateinit var nextWeekBtn: ImageButton
     private lateinit var privWeekBtn: ImageButton
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    val dataSingleton = MainDataSingleton.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,10 +94,7 @@ class MainActivity : DaggerAppCompatActivity(),
         draverRV.layoutManager = LinearLayoutManager(this)
         draverRV.adapter = adapter
 
-        val viewModel: MainViewModel = ViewModelProviders.of(this, viewModelFactory).get(
-            MainViewModel::class.java)
-
-        viewModel.choices.observe(this, Observer {
+        dataSingleton.choices.observe(this, Observer {
             val textIsEmpty = findViewById<TextView>(R.id.text_empty)
             if (it.isEmpty()) {
                 textIsEmpty.visibility = View.VISIBLE
@@ -112,7 +105,7 @@ class MainActivity : DaggerAppCompatActivity(),
             adapter.notifyDataSetChanged()
         })
 
-        viewModel.timeTable.observe(this, Observer {
+        dataSingleton.timeTable.observe(this, Observer {
             initAppBar(it)
         })
 
@@ -125,7 +118,7 @@ class MainActivity : DaggerAppCompatActivity(),
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                getData(s.toString())
+                searchGroups(s.toString())
             }
 
         })
@@ -134,13 +127,17 @@ class MainActivity : DaggerAppCompatActivity(),
         privWeekBtn = findViewById<ImageButton>(R.id.priv_week_btn)
         selectWeekBtn = findViewById<Button>(R.id.select_week_btn)
 
+        selectWeekBtn.isEnabled = false
+        nextWeekBtn.isEnabled = false
+        privWeekBtn.isEnabled = false
+
         nextWeekBtn.setOnClickListener {
             selectWeekBtn.isEnabled = false
             nextWeekBtn.isEnabled = false
             privWeekBtn.isEnabled = false
             getData(
-                viewModel.timeTable.value!!.table!!.group,
-                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) + 1]
+                dataSingleton.timeTable.value!!.table!!.group,
+                dataSingleton.timeTable.value!!.weeks!![dataSingleton.timeTable.value!!.weeks!!.indexOf(dataSingleton.timeTable.value!!.table!!.week) + 1]
             )
         }
         privWeekBtn.setOnClickListener {
@@ -148,8 +145,8 @@ class MainActivity : DaggerAppCompatActivity(),
             nextWeekBtn.isEnabled = false
             privWeekBtn.isEnabled = false
             getData(
-                viewModel.timeTable.value!!.table!!.group,
-                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) - 1]
+                dataSingleton.timeTable.value!!.table!!.group,
+                dataSingleton.timeTable.value!!.weeks!![dataSingleton.timeTable.value!!.weeks!!.indexOf(dataSingleton.timeTable.value!!.table!!.week) - 1]
             )
         }
         selectWeekBtn.setOnClickListener {
@@ -159,7 +156,7 @@ class MainActivity : DaggerAppCompatActivity(),
         initNotifications()
 
         GlobalScope.launch {
-            viewModel.initTimeTable()
+            dataSingleton.initTimeTable()
         }
     }
 
@@ -175,7 +172,7 @@ class MainActivity : DaggerAppCompatActivity(),
 
             Functions.scheduleNotification(
                 this,
-                Functions.getDuration(time)
+                Functions.getDuration(Constants.DEF_NOTIF_TIME)
             )
         }
     }
@@ -184,16 +181,16 @@ class MainActivity : DaggerAppCompatActivity(),
         selectWeekBtn.isEnabled = false
         nextWeekBtn.isEnabled = false
         privWeekBtn.isEnabled = false
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
+
         val popup =
             PopupMenu(this@MainActivity, this@MainActivity.findViewById(R.id.select_week)) //item!!.actionView
-        for (i in viewModel.timeTable.value!!.weeks!!) {
+        for (i in dataSingleton.timeTable.value!!.weeks!!) {
             popup.menu.add("$i неделя")
         }
         popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
         popup.setOnMenuItemClickListener {
             getData(
-                viewModel.timeTable.value!!.table!!.group,
+                dataSingleton.timeTable.value!!.table!!.group,
                 Integer.parseInt(it.title.substring(0, it.title.indexOf(' ')))
             )
             true
@@ -203,8 +200,6 @@ class MainActivity : DaggerAppCompatActivity(),
     }
 
     override fun onChoiseItemClick(data: Choice) {
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
-            MainViewModel::class.java) }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -222,11 +217,11 @@ class MainActivity : DaggerAppCompatActivity(),
     }
 
     private fun initAppBar(timeTable: TimeTable) {
-        if (!timeTable.isOnline!!) {
-            title = title.toString() + " [offline]"
-        } else {
-            title = title.subSequence(0, title.length - 10)
-        }
+//        if (!timeTable.isOnline!!) {
+//            title = title.toString() + " [offline]"
+//        } else {
+//            title = title.subSequence(0, title.length - 10)
+//        }
         if (timeTable.table != null) {
             timeTable.table?.let { table ->
                 menu?.let {
@@ -234,11 +229,7 @@ class MainActivity : DaggerAppCompatActivity(),
                 }
             }
             timeTable.table?.let { title = it.name }
-            val viewModel: MainViewModel by lazy {
-                ViewModelProviders.of(this, viewModelFactory).get(
-                    MainViewModel::class.java
-                )
-            }
+
             val viewPager = findViewById<ViewPager>(R.id.viewpager)
             timeTable.table?.let { viewPager.currentItem = Functions.isDayOfWeekOpen(it) }
 
@@ -273,19 +264,21 @@ class MainActivity : DaggerAppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    fun getData(query: String) {
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
-            MainViewModel::class.java) }
+    fun searchGroups(query: String) {
         GlobalScope.launch {
-            viewModel.searchByQuery(query)
+            dataSingleton.searchByQuery(query)
+        }
+    }
+
+    fun getData(group: String) {
+        GlobalScope.launch {
+            dataSingleton.getTimeTable(group)
         }
     }
 
     fun getData(group: String, week: Int) {
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
-            MainViewModel::class.java) }
         GlobalScope.launch {
-            viewModel.getTimeTableByWeek(group, week)
+            dataSingleton.getTimeTableByWeek(group, week)
         }
     }
 }

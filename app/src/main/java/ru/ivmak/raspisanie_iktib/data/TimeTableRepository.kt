@@ -6,15 +6,16 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.ivmak.raspisanie_iktib.utils.App
 import ru.ivmak.raspisanie_iktib.utils.Constants
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import javax.inject.Inject
 
-class TimeTableRepository @Inject constructor(private var applicationContext: Context) {
+class TimeTableRepository {
 
+    private var applicationContext = App.getApplicationContext()
     val sPref = applicationContext.getSharedPreferences(Constants.APP_PREF, AppCompatActivity.MODE_PRIVATE)
 
     suspend fun searchByQuery(query: String): TimeTable {
@@ -57,7 +58,7 @@ class TimeTableRepository @Inject constructor(private var applicationContext: Co
 
     fun parseJson(jsonStr: String): TimeTable = Gson().fromJson<TimeTable>(jsonStr, TimeTable::class.java)
 
-    fun getTimeTableFromSP(): TimeTable? {
+    fun getTimeTableFromSP(): TimeTable {
         val tTable =  parseJson(loadTextFromSP())
         tTable.isOnline = false
         return tTable
@@ -66,7 +67,7 @@ class TimeTableRepository @Inject constructor(private var applicationContext: Co
     fun saveTextToSP(data: String) {
         val ed = sPref.edit()
         ed.putString(Constants.LAST_TT, data)
-        ed.commit()
+        ed.apply()
     }
 
     fun loadTextFromSP(): String {

@@ -2,22 +2,21 @@ package ru.ivmak.raspisanie_iktib.ui.screens.main
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.ivmak.raspisanie_iktib.data.Choice
-import ru.ivmak.raspisanie_iktib.data.Table
 import ru.ivmak.raspisanie_iktib.data.TimeTable
 import ru.ivmak.raspisanie_iktib.data.TimeTableRepository
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.*
-import javax.inject.Inject
 import kotlin.collections.ArrayList
 
-class MainViewModel @Inject constructor(private var repository: TimeTableRepository) : ViewModel() {
+class MainDataSingleton {
+
+    companion object {
+        val _instance = MainDataSingleton()
+        fun getInstance() = _instance
+    }
+
+    private var repository = TimeTableRepository()
 
     var timeTable = MutableLiveData<TimeTable>()
 
