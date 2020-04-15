@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import ru.ivmak.raspisanie_iktib.utils.App
 import ru.ivmak.raspisanie_iktib.utils.Constants
 import java.io.BufferedReader
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -21,29 +22,29 @@ class TimeTableRepository {
     suspend fun searchByQuery(query: String): TimeTable {
         if (verifyAvailableNetwork()) {
             val tTable = getTimeTableFromAPI("?query=$query")
-            tTable.isOnline = true
+            if (tTable.result == null) {
+                tTable.result = Constants.RESULT_OK
+            }
             return tTable
         }
-        return TimeTable(null, null, null, "no_entries", false)
+        return TimeTable(null, null, arrayListOf(), Constants.CONNECTION_FAIL)
     }
 
     suspend fun getTimeTable(group: String): TimeTable {
         if (verifyAvailableNetwork()) {
             val tTable = getTimeTableFromAPI("?group=$group")
-            tTable.isOnline = true
             saveTextToSP(Gson().toJson(tTable))
-            return tTable
+            return returnServerError(tTable)
         }
-        return TimeTable(null, null, null, "no_entries", false)
+        return returnConnectionFail()
     }
 
     suspend fun getTimeTableByWeek(group: String, week: Int): TimeTable {
         if (verifyAvailableNetwork()) {
             val tTable = getTimeTableFromAPI("?group=$group&week=$week")
-            tTable.isOnline = true
-            return tTable
+            return returnServerError(tTable)
         }
-        return TimeTable(null, null, null, "no_entries", false)
+        return returnConnectionFail()
     }
 
 
@@ -55,12 +56,31 @@ class TimeTableRepository {
         return isConnect
     }
 
+    private fun returnServerError(tTable: TimeTable): TimeTable {
+        if (tTable.result == null) {
+            tTable.result = Constants.RESULT_OK
+        } else if (tTable.result == Constants.SERVER_ERROR && tTable.table == null) {
+            val table = getTimeTableFromSP()
+            tTable.table = table.table
+            tTable.weeks = table.weeks
+        }
+        return tTable
+    }
+
+    private fun returnConnectionFail(): TimeTable {
+        val tTable = getTimeTableFromSP()
+        if (tTable.result != null) {
+            return TimeTable(null, null, null, Constants.CONNECTION_FAIL)
+        } else {
+            return TimeTable(tTable.table, tTable.weeks, null, Constants.CONNECTION_FAIL)
+        }
+    }
+
 
     fun parseJson(jsonStr: String): TimeTable = Gson().fromJson<TimeTable>(jsonStr, TimeTable::class.java)
 
     fun getTimeTableFromSP(): TimeTable {
         val tTable =  parseJson(loadTextFromSP())
-        tTable.isOnline = false
         return tTable
     }
 
@@ -70,8 +90,8 @@ class TimeTableRepository {
         ed.apply()
     }
 
-    fun loadTextFromSP(): String {
-        val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}")
+    private fun loadTextFromSP(): String {
+        val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"${Constants.SP_EMPTY}\"}")
         return savedText
     }
 
@@ -90,14 +110,18 @@ class TimeTableRepository {
             // optional default is GET
             requestMethod = "GET"
 
-            BufferedReader(InputStreamReader(inputStream)).use {
+            try {
+                BufferedReader(InputStreamReader(inputStream)).use {
 
-                var inputLine = it.readLine()
-                while (inputLine != null) {
-                    response.append(inputLine)
-                    inputLine = it.readLine()
+                    var inputLine = it.readLine()
+                    while (inputLine != null) {
+                        response.append(inputLine)
+                        inputLine = it.readLine()
+                    }
+                    it.close()
                 }
-                it.close()
+            } catch (e: FileNotFoundException) {
+                response.append("{\"result\": \"${Constants.SERVER_ERROR}\"}")
             }
         }
         return response.toString()

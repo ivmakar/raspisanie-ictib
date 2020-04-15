@@ -5,6 +5,7 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import ru.ivmak.raspisanie_iktib.data.TimeTable
+import ru.ivmak.raspisanie_iktib.utils.Constants
 import ru.ivmak.raspisanie_iktib.utils.Functions
 import java.util.*
 

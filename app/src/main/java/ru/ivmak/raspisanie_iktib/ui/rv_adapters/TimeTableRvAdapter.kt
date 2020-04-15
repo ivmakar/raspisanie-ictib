@@ -37,10 +37,10 @@ class TimeTableRvAdapter(private var data: ArrayList<DisplayData>) : RecyclerVie
 
         fun bind(data: DisplayData) {
             if (data.isEmpty) {
-                body.visibility = View.GONE
-                time.text = "Окно"
+                time.visibility = View.GONE
+                body.text = "Окно"
             } else {
-                body.visibility = View.VISIBLE
+                time.visibility = View.VISIBLE
                 time.text = data.time
                 body.text = data.body
             }

@@ -10,10 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
@@ -28,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.android.synthetic.main.rv_item.*
 import ru.ivmak.raspisanie_iktib.*
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
@@ -54,6 +52,8 @@ class MainActivity : AppCompatActivity(),
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
     private lateinit var appBarLayout: AppBarLayout
+    private lateinit var selecttimeTableBtn: Button
+    private lateinit var failImage: ImageView
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var searchEditText: TextInputEditText
@@ -74,10 +74,11 @@ class MainActivity : AppCompatActivity(),
         selectWeekBtn = findViewById(R.id.select_week_btn)
         weekManageLayout = findViewById(R.id.week_layout)
         appBarLayout = findViewById(R.id.appBarLayout)
+        failImage = findViewById(R.id.not_connect_image)
 
         drawerLayout = findViewById(R.id.drawer_layout)
 
-        val selecttimeTableBtn = findViewById<Button>(R.id.select_timetable_btn)
+        selecttimeTableBtn = findViewById<Button>(R.id.select_timetable_btn)
         selecttimeTableBtn.setOnClickListener {
             if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 drawerLayout.openDrawer(GravityCompat.START)
@@ -121,6 +122,11 @@ class MainActivity : AppCompatActivity(),
         dataSingleton.choices.observe(this, Observer {
             val textIsEmpty = findViewById<TextView>(R.id.text_empty)
             if (it.isEmpty()) {
+                if (dataSingleton.timeTable.value?.result == Constants.CONNECTION_FAIL) {
+                    textIsEmpty.text = "Нет доступа к интернету, проверьте соединение"
+                } else {
+                    textIsEmpty.text = "Ничего не найдено"
+                }
                 textIsEmpty.visibility = View.VISIBLE
             } else {
                 textIsEmpty.visibility = View.INVISIBLE
@@ -166,6 +172,10 @@ class MainActivity : AppCompatActivity(),
             )
         }
         selectWeekBtn.setOnClickListener {
+            selectWeekBtn.isEnabled = false
+            nextWeekBtn.isEnabled = false
+            privWeekBtn.isEnabled = false
+
             showWeekPopUp()
         }
 
@@ -176,7 +186,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun initNotifications() {
+    private fun initNotifications() {
         val time = sPref.getString(Constants.PREF_NOTIF_TIME, "")
         if (time == "") {
             sPref.edit()
@@ -193,13 +203,9 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun showWeekPopUp() {
-        selectWeekBtn.isEnabled = false
-        nextWeekBtn.isEnabled = false
-        privWeekBtn.isEnabled = false
-
+    private fun showWeekPopUp() {
         val popup =
-            PopupMenu(this@MainActivity, this@MainActivity.findViewById(R.id.select_week)) //item!!.actionView
+            PopupMenu(this@MainActivity, this@MainActivity.findViewById(R.id.select_week_btn)) //item!!.actionView
         for (i in dataSingleton.timeTable.value!!.weeks!!) {
             popup.menu.add("$i неделя")
         }
@@ -232,22 +238,22 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun initAppBar(timeTable: TimeTable) {
-//        if (!timeTable.isOnline!!) {
-//            title = title.toString() + " [offline]"
-//        } else {
-//            title = title.subSequence(0, title.length - 10)
-//        }
+
+        provideResult(timeTable)
+
         if (timeTable.table != null) {
             weekManageLayout.visibility = View.VISIBLE
             appBarLayout.visibility = View.VISIBLE
             viewPager.visibility = View.VISIBLE
-                menu?.let {
-                    it.getItem(0).title = timeTable.table!!.week.toString() + " неделя"
-                }
-            title = timeTable.table!!.name
+            selecttimeTableBtn.visibility = View.GONE
+            failImage.visibility = View.GONE
 
             val viewPager = findViewById<ViewPager>(R.id.viewpager)
-            viewPager.currentItem = Functions.isDayOfWeekOpen(timeTable.table!!)
+
+            val curDay = Functions.isDayOfWeekOpen(timeTable.table!!)
+            if (curDay != -1) {
+                viewPager.currentItem = curDay
+            }
 
             selectWeekBtn.text = timeTable.table!!.week.toString() + " неделя"
             selectWeekBtn.isEnabled = true
@@ -258,10 +264,33 @@ class MainActivity : AppCompatActivity(),
             if (timeTable.weeks!!.indexOf(timeTable.table!!.week) > 0) {
                 privWeekBtn.isEnabled = true
             }
-        } else {
-            weekManageLayout.visibility = View.GONE
-            appBarLayout.visibility = View.GONE
-            viewPager.visibility = View.GONE
+        }
+    }
+
+    private fun provideResult(timeTable: TimeTable) {
+        when (timeTable.result) {
+            Constants.CONNECTION_FAIL -> {
+                title = "[offline]"
+                Toast.makeText(this, "Не удалось подключиться к интернету, проаерьте соединение", Toast.LENGTH_SHORT).show()
+            }
+            Constants.SERVER_ERROR -> {
+                title = "[offline]"
+                Toast.makeText(this, "Не удалось подключиться к серверу, попробуйте позже", Toast.LENGTH_SHORT).show()
+            }
+            Constants.SP_EMPTY -> {
+                title = timeTable.table?.name ?: "Расписание ИКТИБ"
+                weekManageLayout.visibility = View.GONE
+                appBarLayout.visibility = View.GONE
+                viewPager.visibility = View.GONE
+                selecttimeTableBtn.visibility = View.VISIBLE
+                failImage.visibility = View.VISIBLE
+            }
+            Constants.RESULT_OK -> {
+                title = timeTable.table?.name ?: "Расписание ИКТИБ"
+            }
+            else -> {
+                title = timeTable.table?.name ?: "Расписание ИКТИБ"
+            }
         }
     }
 
@@ -273,9 +302,9 @@ class MainActivity : AppCompatActivity(),
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
-            R.id.select_week -> {
-                showWeekPopUp()
-            }
+//            R.id.select_week -> {
+//                showWeekPopUp()
+//            }
             R.id.settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
@@ -284,19 +313,19 @@ class MainActivity : AppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    fun searchGroups(query: String) {
+    private fun searchGroups(query: String) {
         GlobalScope.launch {
             dataSingleton.searchByQuery(query)
         }
     }
 
-    fun getData(group: String) {
+    private fun getData(group: String) {
         GlobalScope.launch {
             dataSingleton.getTimeTable(group)
         }
     }
 
-    fun getData(group: String, week: Int) {
+    private fun getData(group: String, week: Int) {
         GlobalScope.launch {
             dataSingleton.getTimeTableByWeek(group, week)
         }

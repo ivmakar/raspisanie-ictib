@@ -21,6 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/time"
+                android:textColor="@color/colorBlack"
                 android:layout_margin="4dp" android:textSize="18sp"/>
         <TextView
                 android:layout_width="match_parent"

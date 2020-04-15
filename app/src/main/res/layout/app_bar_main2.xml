@@ -12,7 +12,6 @@
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:theme="@style/AppTheme.AppBarOverlay"
             app:layout_constraintBottom_toTopOf="@+id/viewpager"
             app:layout_constraintEnd_toEndOf="parent"
@@ -38,6 +37,7 @@
 
     <ImageView
             android:id="@+id/not_connect_image"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -50,6 +50,7 @@
 
     <Button
             android:id="@+id/select_timetable_btn"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -62,7 +63,6 @@
 
     <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewpager"
-            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="0px"
             android:layout_weight="1"

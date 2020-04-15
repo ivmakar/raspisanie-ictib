@@ -16,5 +16,10 @@ class Constants {
         const val PREF_IS_NOTIF = "is_notify"
         const val PREF_NOTIF_TIME = "notify_time"
 
+        const val SERVER_ERROR = "server_error"
+        const val CONNECTION_FAIL = "no_connection"
+        const val RESULT_OK = "ok"
+        const val SP_EMPTY = "sp_empty"
+
     }
 }

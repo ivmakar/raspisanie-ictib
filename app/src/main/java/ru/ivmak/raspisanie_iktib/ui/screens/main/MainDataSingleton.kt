@@ -1,5 +1,6 @@
 package ru.ivmak.raspisanie_iktib.ui.screens.main
 
+import android.provider.SyncStateContract
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -7,6 +8,7 @@ import kotlinx.coroutines.withContext
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
 import ru.ivmak.raspisanie_iktib.data.TimeTableRepository
+import ru.ivmak.raspisanie_iktib.utils.Constants
 import kotlin.collections.ArrayList
 
 class MainDataSingleton {
@@ -21,9 +23,6 @@ class MainDataSingleton {
     var timeTable = MutableLiveData<TimeTable>()
 
     var choices = MutableLiveData<ArrayList<Choice>>()
-    
-    var isConnection = false
-
 
     suspend fun initTimeTable() {
         withContext(Dispatchers.Main) {
@@ -34,8 +33,9 @@ class MainDataSingleton {
     suspend fun searchByQuery(query: String) {
         val tTable = repository.searchByQuery(query)
         withContext(Dispatchers.Main) {
+            timeTable.value?.result = tTable.result
             when {
-                tTable.result != null -> choices.value = arrayListOf()
+                tTable.result != Constants.RESULT_OK -> choices.value = arrayListOf()
                 tTable.choices != null -> choices.value = tTable.choices
                 tTable.table != null -> choices.value =
                     arrayListOf(
@@ -45,6 +45,7 @@ class MainDataSingleton {
                             tTable.table!!.group
                         )
                     )
+                else -> choices.value = arrayListOf()
             }
         }
     }
@@ -52,18 +53,14 @@ class MainDataSingleton {
     suspend fun getTimeTable(group: String) {
         val tTable = repository.getTimeTable(group)
         withContext(Dispatchers.Main) {
-            if (tTable.table != null) {
                 timeTable.value = tTable
-            }
         }
     }
 
     suspend fun getTimeTableByWeek(group: String, week: Int) {
         val tTable = repository.getTimeTableByWeek(group, week)
         withContext(Dispatchers.Main) {
-            if (tTable.table != null) {
                 timeTable.value = tTable
-            }
         }
     }
 }
