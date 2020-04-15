@@ -12,6 +12,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.textfield.TextInputEditText
 import ru.ivmak.raspisanie_iktib.*
 import ru.ivmak.raspisanie_iktib.data.Choice
@@ -47,6 +49,14 @@ class MainActivity : AppCompatActivity(),
     private lateinit var selectWeekBtn: Button
     private lateinit var nextWeekBtn: ImageButton
     private lateinit var privWeekBtn: ImageButton
+    private lateinit var weekManageLayout: LinearLayout
+
+    private lateinit var viewPager: ViewPager
+    private lateinit var tabLayout: TabLayout
+    private lateinit var appBarLayout: AppBarLayout
+
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var searchEditText: TextInputEditText
 
     val dataSingleton = MainDataSingleton.getInstance()
 
@@ -55,6 +65,24 @@ class MainActivity : AppCompatActivity(),
         setContentView(R.layout.activity_main)
 
         sPref = getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE)
+
+        viewPager = findViewById(R.id.viewpager)
+        tabLayout = findViewById(R.id.sliding_tabs)
+
+        nextWeekBtn = findViewById(R.id.next_week_btn)
+        privWeekBtn = findViewById(R.id.priv_week_btn)
+        selectWeekBtn = findViewById(R.id.select_week_btn)
+        weekManageLayout = findViewById(R.id.week_layout)
+        appBarLayout = findViewById(R.id.appBarLayout)
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+
+        val selecttimeTableBtn = findViewById<Button>(R.id.select_timetable_btn)
+        selecttimeTableBtn.setOnClickListener {
+            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+        }
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -79,10 +107,6 @@ class MainActivity : AppCompatActivity(),
 
         })
         toggle.syncState()
-
-        val viewPager = findViewById<ViewPager>(R.id.viewpager)
-
-        val tabLayout = findViewById<TabLayout>(R.id.sliding_tabs)
 
         viewPager.adapter =
             SimpleFragmentPagerAdapter(
@@ -109,7 +133,7 @@ class MainActivity : AppCompatActivity(),
             initAppBar(it)
         })
 
-        val searchEditText = findViewById<TextInputEditText>(R.id.search_edit_text)
+        searchEditText = findViewById<TextInputEditText>(R.id.search_edit_text)
         searchEditText.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
             }
@@ -122,14 +146,6 @@ class MainActivity : AppCompatActivity(),
             }
 
         })
-
-        nextWeekBtn = findViewById<ImageButton>(R.id.next_week_btn)
-        privWeekBtn = findViewById<ImageButton>(R.id.priv_week_btn)
-        selectWeekBtn = findViewById<Button>(R.id.select_week_btn)
-
-        selectWeekBtn.isEnabled = false
-        nextWeekBtn.isEnabled = false
-        privWeekBtn.isEnabled = false
 
         nextWeekBtn.setOnClickListener {
             selectWeekBtn.isEnabled = false
@@ -200,15 +216,14 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onChoiseItemClick(data: Choice) {
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         }
+        searchEditText.text?.clear()
         getData(data.group)
     }
 
     override fun onBackPressed() {
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
@@ -223,17 +238,18 @@ class MainActivity : AppCompatActivity(),
 //            title = title.subSequence(0, title.length - 10)
 //        }
         if (timeTable.table != null) {
-            timeTable.table?.let { table ->
+            weekManageLayout.visibility = View.VISIBLE
+            appBarLayout.visibility = View.VISIBLE
+            viewPager.visibility = View.VISIBLE
                 menu?.let {
-                    it.getItem(0).title = table.week.toString() + " неделя"
+                    it.getItem(0).title = timeTable.table!!.week.toString() + " неделя"
                 }
-            }
-            timeTable.table?.let { title = it.name }
+            title = timeTable.table!!.name
 
             val viewPager = findViewById<ViewPager>(R.id.viewpager)
-            timeTable.table?.let { viewPager.currentItem = Functions.isDayOfWeekOpen(it) }
+            viewPager.currentItem = Functions.isDayOfWeekOpen(timeTable.table!!)
 
-            timeTable.table?.let { table -> selectWeekBtn.text = table.week.toString() + " неделя" }
+            selectWeekBtn.text = timeTable.table!!.week.toString() + " неделя"
             selectWeekBtn.isEnabled = true
             if (timeTable.weeks!!.indexOf(timeTable.table!!.week) < timeTable.weeks!!.size - 1) {
                 nextWeekBtn.isEnabled = true
@@ -242,6 +258,10 @@ class MainActivity : AppCompatActivity(),
             if (timeTable.weeks!!.indexOf(timeTable.table!!.week) > 0) {
                 privWeekBtn.isEnabled = true
             }
+        } else {
+            weekManageLayout.visibility = View.GONE
+            appBarLayout.visibility = View.GONE
+            viewPager.visibility = View.GONE
         }
     }
 
