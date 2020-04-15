@@ -9,11 +9,13 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.Worker
+import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import ru.ivmak.raspisanie_iktib.R
 import ru.ivmak.raspisanie_iktib.utils.Functions
 import ru.ivmak.raspisanie_iktib.data.Table
 import ru.ivmak.raspisanie_iktib.data.TimeTable
+import ru.ivmak.raspisanie_iktib.data.TimeTableRepository
 import ru.ivmak.raspisanie_iktib.ui.screens.main.MainActivity
 import ru.ivmak.raspisanie_iktib.utils.Constants
 import java.io.BufferedReader
@@ -21,20 +23,26 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import javax.inject.Inject
 
-class NotifyWorker : Worker() {
+class NotifyWorker @Inject constructor(appContext: Context, workerParams: WorkerParameters): Worker(appContext, workerParams) {
 
     val TAG = Constants.WORKER_TAG
     lateinit var timeTable: TimeTable
 
-    override fun doWork(): WorkerResult {
+    lateinit var timeTableRepository: TimeTableRepository
 
-        val savedText: String = inputData.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}")
+    override fun doWork(): Result {
+
+        var savedText: String? = inputData.getString(Constants.LAST_TT)
+        if (savedText == null) {
+            savedText = "{\"result\": \"no_entries\"}"
+        }
 
         timeTable = parseJson(savedText)
 
         if (timeTable.result == "no_entries" || timeTable.table == null) {
-            return WorkerResult.SUCCESS
+            return Result.success()
         }
 
         val dayOfWeek = isDayOfWeekOpen(timeTable.table!!)
@@ -63,7 +71,7 @@ class NotifyWorker : Worker() {
 
         restartWorker()
 
-        return WorkerResult.SUCCESS
+        return Result.success()
     }
 
     private fun restartWorker() {

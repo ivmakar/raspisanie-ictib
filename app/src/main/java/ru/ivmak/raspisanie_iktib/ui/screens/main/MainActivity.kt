@@ -3,8 +3,6 @@ package ru.ivmak.raspisanie_iktib.ui.screens.main
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,10 +23,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
-import com.google.gson.Gson
+import dagger.android.support.DaggerAppCompatActivity
 import ru.ivmak.raspisanie_iktib.*
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
@@ -36,8 +35,9 @@ import ru.ivmak.raspisanie_iktib.ui.rv_adapters.DraverRvAdapter
 import ru.ivmak.raspisanie_iktib.ui.screens.settings.SettingsActivity
 import ru.ivmak.raspisanie_iktib.utils.Constants
 import ru.ivmak.raspisanie_iktib.utils.Functions
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity(),
+class MainActivity : DaggerAppCompatActivity(),
     DraverRvAdapter.OnItemClickListener {
 
     private var menu: Menu? = null
@@ -51,23 +51,8 @@ class MainActivity : AppCompatActivity(),
     private lateinit var nextWeekBtn: ImageButton
     private lateinit var privWeekBtn: ImageButton
 
-    fun verifyAvailableNetwork():Boolean{
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(
-            MainViewModel::class.java) }
-        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo= connectivityManager.activeNetworkInfo
-        val isConnect = networkInfo!=null && networkInfo.isConnected
-        val textIsConnect = findViewById<TextView>(R.id.text_unconnect)
-        if (!isConnect) {
-            textIsConnect.visibility = View.VISIBLE
-            adapter.setData(arrayListOf())
-            viewModel.isConnection = false
-        } else {
-            textIsConnect.visibility = View.INVISIBLE
-            viewModel.isConnection = true
-        }
-        return isConnect
-    }
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,7 +98,7 @@ class MainActivity : AppCompatActivity(),
         draverRV.layoutManager = LinearLayoutManager(this)
         draverRV.adapter = adapter
 
-        val viewModel: MainViewModel = ViewModelProviders.of(this).get(
+        val viewModel: MainViewModel = ViewModelProviders.of(this, viewModelFactory).get(
             MainViewModel::class.java)
 
         viewModel.choices.observe(this, Observer {
@@ -129,7 +114,6 @@ class MainActivity : AppCompatActivity(),
 
         viewModel.timeTable.observe(this, Observer {
             initAppBar(it)
-            saveText(Gson().toJson(it))
         })
 
         val searchEditText = findViewById<TextInputEditText>(R.id.search_edit_text)
@@ -156,7 +140,7 @@ class MainActivity : AppCompatActivity(),
             privWeekBtn.isEnabled = false
             getData(
                 viewModel.timeTable.value!!.table!!.group,
-                viewModel.timeTable.value!!.table!!.week + 1
+                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) + 1]
             )
         }
         privWeekBtn.setOnClickListener {
@@ -165,7 +149,7 @@ class MainActivity : AppCompatActivity(),
             privWeekBtn.isEnabled = false
             getData(
                 viewModel.timeTable.value!!.table!!.group,
-                viewModel.timeTable.value!!.table!!.week - 1
+                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) - 1]
             )
         }
         selectWeekBtn.setOnClickListener {
@@ -175,10 +159,8 @@ class MainActivity : AppCompatActivity(),
         initNotifications()
 
         GlobalScope.launch {
-            viewModel.initTimeTable(loadText())
+            viewModel.initTimeTable()
         }
-
-        verifyAvailableNetwork()
     }
 
     fun initNotifications() {
@@ -202,7 +184,7 @@ class MainActivity : AppCompatActivity(),
         selectWeekBtn.isEnabled = false
         nextWeekBtn.isEnabled = false
         privWeekBtn.isEnabled = false
-        val viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
         val popup =
             PopupMenu(this@MainActivity, this@MainActivity.findViewById(R.id.select_week)) //item!!.actionView
         for (i in viewModel.timeTable.value!!.weeks!!) {
@@ -220,22 +202,14 @@ class MainActivity : AppCompatActivity(),
         popup.show()
     }
 
-    override fun onItemClick(data: Choice) {
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(
+    override fun onChoiseItemClick(data: Choice) {
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
             MainViewModel::class.java) }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         }
-        if (!verifyAvailableNetwork()) {
-            return
-        }
-        GlobalScope.launch {
-            viewModel.getTimeTable(data.group)
-            withContext(Dispatchers.Main) {
-                initAppBar(viewModel.timeTable.value!!)
-            }
-        }
+        getData(data.group)
     }
 
     override fun onBackPressed() {
@@ -247,29 +221,12 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun getData(query: String) {
-        if (!verifyAvailableNetwork()) {
-            return
-        }
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(
-            MainViewModel::class.java) }
-        GlobalScope.launch {
-            viewModel.searchByQuery(query)
-        }
-    }
-
-    fun getData(group: String, week: Int) {
-        if (!verifyAvailableNetwork()) {
-            return
-        }
-        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this).get(
-            MainViewModel::class.java) }
-        GlobalScope.launch {
-            viewModel.getTimeTableByWeek(group, week)
-        }
-    }
-
     private fun initAppBar(timeTable: TimeTable) {
+        if (!timeTable.isOnline!!) {
+            title = title.toString() + " [offline]"
+        } else {
+            title = title.subSequence(0, title.length - 10)
+        }
         if (timeTable.table != null) {
             timeTable.table?.let { table ->
                 menu?.let {
@@ -278,12 +235,12 @@ class MainActivity : AppCompatActivity(),
             }
             timeTable.table?.let { title = it.name }
             val viewModel: MainViewModel by lazy {
-                ViewModelProviders.of(this).get(
+                ViewModelProviders.of(this, viewModelFactory).get(
                     MainViewModel::class.java
                 )
             }
             val viewPager = findViewById<ViewPager>(R.id.viewpager)
-            timeTable.table?.let { viewPager.currentItem = viewModel.isDayOfWeekOpen(it) }
+            timeTable.table?.let { viewPager.currentItem = Functions.isDayOfWeekOpen(it) }
 
             timeTable.table?.let { table -> selectWeekBtn.text = table.week.toString() + " неделя" }
             selectWeekBtn.isEnabled = true
@@ -316,14 +273,19 @@ class MainActivity : AppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    fun saveText(data: String) {
-        val ed: SharedPreferences.Editor = sPref.edit()
-        ed.putString(Constants.LAST_TT, data)
-        ed.commit()
+    fun getData(query: String) {
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
+            MainViewModel::class.java) }
+        GlobalScope.launch {
+            viewModel.searchByQuery(query)
+        }
     }
 
-    fun loadText(): String {
-        val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"no_entries\"}")
-        return savedText
+    fun getData(group: String, week: Int) {
+        val viewModel: MainViewModel by lazy { ViewModelProviders.of(this, viewModelFactory).get(
+            MainViewModel::class.java) }
+        GlobalScope.launch {
+            viewModel.getTimeTableByWeek(group, week)
+        }
     }
 }

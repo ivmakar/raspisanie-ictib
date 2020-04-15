@@ -8,14 +8,16 @@ import kotlinx.coroutines.withContext
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.Table
 import ru.ivmak.raspisanie_iktib.data.TimeTable
+import ru.ivmak.raspisanie_iktib.data.TimeTableRepository
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
-class MainViewModel : ViewModel() {
+class MainViewModel @Inject constructor(private var repository: TimeTableRepository) : ViewModel() {
 
     var timeTable = MutableLiveData<TimeTable>()
 
@@ -24,20 +26,14 @@ class MainViewModel : ViewModel() {
     var isConnection = false
 
 
-    suspend fun initTimeTable(data: String) {
-        val tTable = parseJson(data)
-        if (tTable.table != null) {
-            withContext(Dispatchers.Main) {
-                timeTable.value = tTable
-            }
-            if (isConnection) {
-                getTimeTable(tTable.table!!.group)
-            }
+    suspend fun initTimeTable() {
+        withContext(Dispatchers.Main) {
+            timeTable.value = repository.getTimeTableFromSP()
         }
     }
 
     suspend fun searchByQuery(query: String) {
-        val tTable = getTimeTableFromAPI("?query=$query")
+        val tTable = repository.searchByQuery(query)
         withContext(Dispatchers.Main) {
             when {
                 tTable.result != null -> choices.value = arrayListOf()
@@ -55,7 +51,7 @@ class MainViewModel : ViewModel() {
     }
 
     suspend fun getTimeTable(group: String) {
-        val tTable = getTimeTableFromAPI("?group=$group")
+        val tTable = repository.getTimeTable(group)
         withContext(Dispatchers.Main) {
             if (tTable.table != null) {
                 timeTable.value = tTable
@@ -64,57 +60,11 @@ class MainViewModel : ViewModel() {
     }
 
     suspend fun getTimeTableByWeek(group: String, week: Int) {
-        val tTable = getTimeTableFromAPI("?group=$group&week=$week")
+        val tTable = repository.getTimeTableByWeek(group, week)
         withContext(Dispatchers.Main) {
             if (tTable.table != null) {
                 timeTable.value = tTable
             }
         }
     }
-
-    private fun parseJson(jsonStr: String): TimeTable = Gson().fromJson<TimeTable>(jsonStr, TimeTable::class.java)
-
-    private suspend fun getTimeTableFromAPI(params: String): TimeTable =
-        parseJson(withContext(Dispatchers.IO){
-            httpRequest(
-                URL("http://165.22.28.187/schedule-api/$params")
-            )
-        })
-
-    private fun httpRequest(url: URL): String {
-        val response = StringBuffer()
-        with(url.openConnection() as HttpURLConnection) {
-            // optional default is GET
-            requestMethod = "GET"
-
-            BufferedReader(InputStreamReader(inputStream)).use {
-
-                var inputLine = it.readLine()
-                while (inputLine != null) {
-                    response.append(inputLine)
-                    inputLine = it.readLine()
-                }
-                it.close()
-            }
-        }
-        return response.toString()
-    }
-
-    fun isDayOfWeekOpen(table: Table): Int {
-        val months = arrayOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря")
-        val date = Date()
-        for (i in 0..5) {
-            var str = table.table[i + 2][0]
-            val dayRegex = Regex("""([А-Я][а-я][а-я]),([0-9]+)\s+([а-я]+)""")
-            val arr = dayRegex.findAll(str, 0)
-            val (day, num, month) = arr.toList()[0].destructured
-            if (Integer.parseInt(num) == date.date) {
-                if (months[date.month] == month) {
-                    return i
-                }
-            }
-        }
-        return 0
-    }
-
 }

@@ -20,7 +20,7 @@ class DraverRvAdapter(private var data: ArrayList<Choice>, val listener: OnItemC
     }
 
     interface OnItemClickListener {
-        fun onItemClick(data: Choice)
+        fun onChoiseItemClick(data: Choice)
     }
 
     override fun getItemCount(): Int = data.size
@@ -40,7 +40,7 @@ class DraverRvAdapter(private var data: ArrayList<Choice>, val listener: OnItemC
         fun bind(data: Choice, listener: OnItemClickListener) {
             caption.text = data.name
             view.setOnClickListener {
-                listener.onItemClick(data)
+                listener.onChoiseItemClick(data)
             }
         }
     }

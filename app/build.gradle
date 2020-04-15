@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.0.0'
@@ -61,5 +62,13 @@ dependencies {
     kapt 'androidx.lifecycle:lifecycle-compiler:2.0.0'
 
     //Workmanager
-    implementation "android.arch.work:work-runtime:1.0.0-alpha02"
+    implementation "androidx.work:work-runtime:2.0.1"
+    implementation "androidx.work:work-runtime-ktx:2.0.1"
+
+    //Dagger
+    implementation "com.google.dagger:dagger:2.22.1"
+//    implementation "com.google.dagger:dagger-android:2.24"
+    implementation "com.google.dagger:dagger-android-support:2.22.1"
+    kapt "com.google.dagger:dagger-compiler:2.22.1"
+    kapt "com.google.dagger:dagger-android-processor:2.22.1"
 }

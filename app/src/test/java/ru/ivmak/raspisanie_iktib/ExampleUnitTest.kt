@@ -105,4 +105,10 @@ class ExampleUnitTest {
         assertEquals(60*1000, Functions.getDuration("06:01"))
 
     }
+
+    @Test
+    fun testSetTitle() {
+        val title = "КТмо1-4 [offline]"
+        assertEquals("КТмо1-4", title.subSequence(0, title.length - 10))
+    }
 }

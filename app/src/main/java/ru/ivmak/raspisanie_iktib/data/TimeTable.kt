@@ -7,5 +7,6 @@ class TimeTable (
     var table: Table?,
     var weeks: ArrayList<Int>?,
     val choices: ArrayList<Choice>?,
-    val result: String?
+    val result: String?,
+    var isOnline: Boolean?
 )

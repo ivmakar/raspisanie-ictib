@@ -8,13 +8,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.android.support.DaggerFragment
 import ru.ivmak.raspisanie_iktib.data.DisplayData
 import ru.ivmak.raspisanie_iktib.ui.rv_adapters.TimeTableRvAdapter
 import ru.ivmak.raspisanie_iktib.R
 import ru.ivmak.raspisanie_iktib.data.Table
+import javax.inject.Inject
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -26,7 +29,7 @@ private const val ARG_PAGE = "ARG_PAGE"
  * A simple [Fragment] subclass.
  *
  */
-class PageFragment : Fragment() {
+class PageFragment : DaggerFragment() {
 
 
     private var mPage: Int = 0
@@ -35,6 +38,9 @@ class PageFragment : Fragment() {
         TimeTableRvAdapter(arrayListOf())
     private lateinit var rv: RecyclerView
 
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,8 +48,7 @@ class PageFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_page, container, false)
 
-        val viewModel: MainViewModel = activity?.let { ViewModelProviders.of(it).get(
-            MainViewModel::class.java) }!!
+        val viewModel: MainViewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
 
         val textView = view.findViewById<TextView>(R.id.textView)
 

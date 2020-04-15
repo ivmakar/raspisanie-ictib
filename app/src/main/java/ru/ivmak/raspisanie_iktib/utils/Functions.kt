@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import ru.ivmak.raspisanie_iktib.data.Table
 import ru.ivmak.raspisanie_iktib.utils.notification.NotifyWorker
 import java.text.SimpleDateFormat
 import java.util.*
@@ -45,6 +46,23 @@ class Functions {
             }
 
             return duration
+        }
+
+        fun isDayOfWeekOpen(table: Table): Int {
+            val months = arrayOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря")
+            val date = Date()
+            for (i in 0..5) {
+                var str = table.table[i + 2][0]
+                val dayRegex = Regex("""([А-Я][а-я][а-я]),([0-9]+)\s+([а-я]+)""")
+                val arr = dayRegex.findAll(str, 0)
+                val (day, num, month) = arr.toList()[0].destructured
+                if (Integer.parseInt(num) == date.date) {
+                    if (months[date.month] == month) {
+                        return i
+                    }
+                }
+            }
+            return 0
         }
     }
 }
