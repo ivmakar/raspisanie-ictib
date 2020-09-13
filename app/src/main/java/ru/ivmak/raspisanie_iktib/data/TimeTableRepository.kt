@@ -13,10 +13,10 @@ import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.inject.Inject
 
-class TimeTableRepository {
+class TimeTableRepository @Inject constructor(val applicationContext: Context) {
 
-    private var applicationContext = App.getApplicationContext()
     val sPref = applicationContext.getSharedPreferences(Constants.APP_PREF, AppCompatActivity.MODE_PRIVATE)
 
     suspend fun searchByQuery(query: String): TimeTable {
@@ -91,8 +91,8 @@ class TimeTableRepository {
     }
 
     private fun loadTextFromSP(): String {
-        val savedText: String = sPref.getString(Constants.LAST_TT, "{\"result\": \"${Constants.SP_EMPTY}\"}")
-        return savedText
+        val savedText: String? = sPref.getString(Constants.LAST_TT, "{\"result\": \"${Constants.SP_EMPTY}\"}")
+        return savedText!!
     }
 
     private suspend fun getTimeTableFromAPI(params: String): TimeTable {

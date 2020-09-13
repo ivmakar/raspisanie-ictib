@@ -9,16 +9,15 @@ import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
 import ru.ivmak.raspisanie_iktib.data.TimeTableRepository
 import ru.ivmak.raspisanie_iktib.utils.Constants
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
-class MainDataSingleton {
+class MainViewModel @Inject constructor(val repository: TimeTableRepository) : ViewModel() {
 
-    companion object {
-        val _instance = MainDataSingleton()
-        fun getInstance() = _instance
-    }
-
-    private var repository = TimeTableRepository()
+//    companion object {
+//        val _instance = MainDataSingleton()
+//        fun getInstance() = _instance
+//    }
 
     var timeTable = MutableLiveData<TimeTable>()
 

@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.android.synthetic.main.rv_item.*
 import ru.ivmak.raspisanie_iktib.*
 import ru.ivmak.raspisanie_iktib.data.Choice
 import ru.ivmak.raspisanie_iktib.data.TimeTable
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var searchEditText: TextInputEditText
 
-    val dataSingleton = MainDataSingleton.getInstance()
+    lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,10 +118,10 @@ class MainActivity : AppCompatActivity(),
         draverRV.layoutManager = LinearLayoutManager(this)
         draverRV.adapter = adapter
 
-        dataSingleton.choices.observe(this, Observer {
+        viewModel.choices.observe(this, Observer {
             val textIsEmpty = findViewById<TextView>(R.id.text_empty)
             if (it.isEmpty()) {
-                if (dataSingleton.timeTable.value?.result == Constants.CONNECTION_FAIL) {
+                if (viewModel.timeTable.value?.result == Constants.CONNECTION_FAIL) {
                     textIsEmpty.text = "Нет доступа к интернету, проверьте соединение"
                 } else {
                     textIsEmpty.text = "Ничего не найдено"
@@ -135,7 +134,7 @@ class MainActivity : AppCompatActivity(),
             adapter.notifyDataSetChanged()
         })
 
-        dataSingleton.timeTable.observe(this, Observer {
+        viewModel.timeTable.observe(this, Observer {
             initAppBar(it)
         })
 
@@ -158,8 +157,8 @@ class MainActivity : AppCompatActivity(),
             nextWeekBtn.isEnabled = false
             privWeekBtn.isEnabled = false
             getData(
-                dataSingleton.timeTable.value!!.table!!.group,
-                dataSingleton.timeTable.value!!.weeks!![dataSingleton.timeTable.value!!.weeks!!.indexOf(dataSingleton.timeTable.value!!.table!!.week) + 1]
+                viewModel.timeTable.value!!.table!!.group,
+                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) + 1]
             )
         }
         privWeekBtn.setOnClickListener {
@@ -167,8 +166,8 @@ class MainActivity : AppCompatActivity(),
             nextWeekBtn.isEnabled = false
             privWeekBtn.isEnabled = false
             getData(
-                dataSingleton.timeTable.value!!.table!!.group,
-                dataSingleton.timeTable.value!!.weeks!![dataSingleton.timeTable.value!!.weeks!!.indexOf(dataSingleton.timeTable.value!!.table!!.week) - 1]
+                viewModel.timeTable.value!!.table!!.group,
+                viewModel.timeTable.value!!.weeks!![viewModel.timeTable.value!!.weeks!!.indexOf(viewModel.timeTable.value!!.table!!.week) - 1]
             )
         }
         selectWeekBtn.setOnClickListener {
@@ -182,7 +181,7 @@ class MainActivity : AppCompatActivity(),
         initNotifications()
 
         GlobalScope.launch {
-            dataSingleton.initTimeTable()
+            viewModel.initTimeTable()
         }
     }
 
@@ -206,13 +205,13 @@ class MainActivity : AppCompatActivity(),
     private fun showWeekPopUp() {
         val popup =
             PopupMenu(this@MainActivity, this@MainActivity.findViewById(R.id.select_week_btn)) //item!!.actionView
-        for (i in dataSingleton.timeTable.value!!.weeks!!) {
+        for (i in viewModel.timeTable.value!!.weeks!!) {
             popup.menu.add("$i неделя")
         }
         popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
         popup.setOnMenuItemClickListener {
             getData(
-                dataSingleton.timeTable.value!!.table!!.group,
+                viewModel.timeTable.value!!.table!!.group,
                 Integer.parseInt(it.title.substring(0, it.title.indexOf(' ')))
             )
             true
@@ -271,7 +270,7 @@ class MainActivity : AppCompatActivity(),
         when (timeTable.result) {
             Constants.CONNECTION_FAIL -> {
                 title = "[offline]"
-                Toast.makeText(this, "Не удалось подключиться к интернету, проаерьте соединение", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Не удалось подключиться к интернету, проверьте соединение", Toast.LENGTH_SHORT).show()
             }
             Constants.SERVER_ERROR -> {
                 title = "[offline]"
@@ -315,19 +314,19 @@ class MainActivity : AppCompatActivity(),
 
     private fun searchGroups(query: String) {
         GlobalScope.launch {
-            dataSingleton.searchByQuery(query)
+            viewModel.searchByQuery(query)
         }
     }
 
     private fun getData(group: String) {
         GlobalScope.launch {
-            dataSingleton.getTimeTable(group)
+            viewModel.getTimeTable(group)
         }
     }
 
     private fun getData(group: String, week: Int) {
         GlobalScope.launch {
-            dataSingleton.getTimeTableByWeek(group, week)
+            viewModel.getTimeTableByWeek(group, week)
         }
     }
 }

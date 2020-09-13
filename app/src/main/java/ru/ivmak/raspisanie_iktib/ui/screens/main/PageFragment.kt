@@ -16,8 +16,6 @@ import ru.ivmak.raspisanie_iktib.R
 import ru.ivmak.raspisanie_iktib.data.Table
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PAGE = "ARG_PAGE"
 
 
@@ -33,7 +31,7 @@ class PageFragment : Fragment() {
     private var adapter = TimeTableRvAdapter(arrayListOf())
     private lateinit var rv: RecyclerView
 
-    val dataSingleton = MainDataSingleton.getInstance()
+//    val dataSingleton = MainViewModel.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,30 +45,30 @@ class PageFragment : Fragment() {
         rv.layoutManager = LinearLayoutManager(this.context)
         rv.adapter = adapter
 
-        dataSingleton.timeTable.observe(this, Observer {
-            if (it.table != null) {
-                textView.text = it.table!!.table[mPage + 2][0]
-                var data = ArrayList<DisplayData>()
-                for (i in 1..7) {
-                    if (it.table!!.table[mPage + 2][i] == "") {
-                        data.add(DisplayData())
-                    } else {
-                        data.add(
-                            DisplayData(
-                                it.table!!.table[1][i],
-                                it.table!!.table[mPage + 2][i],
-                                i,
-                                false,
-                                0
-                            )
-                        )
-                    }
-                    data.last().numOfPair = i
-                }
-                adapter.setData(data)
-                adapter.notifyDataSetChanged()
-            }
-        })
+//        dataSingleton.timeTable.observe(viewLifecycleOwner, Observer {
+//            if (it.table != null) {
+//                textView.text = it.table!!.table[mPage + 2][0]
+//                var data = ArrayList<DisplayData>()
+//                for (i in 1..7) {
+//                    if (it.table!!.table[mPage + 2][i] == "") {
+//                        data.add(DisplayData())
+//                    } else {
+//                        data.add(
+//                            DisplayData(
+//                                it.table!!.table[1][i],
+//                                it.table!!.table[mPage + 2][i],
+//                                i,
+//                                false,
+//                                0
+//                            )
+//                        )
+//                    }
+//                    data.last().numOfPair = i
+//                }
+//                adapter.setData(data)
+//                adapter.notifyDataSetChanged()
+//            }
+//        })
 
         return view
     }
@@ -90,7 +88,7 @@ class PageFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (arguments != null) {
-            mPage = arguments!!.getInt(ARG_PAGE)
+            mPage = requireArguments().getInt(ARG_PAGE)
         }
     }
 

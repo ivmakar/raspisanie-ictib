@@ -34,7 +34,7 @@ class NotifyWorker(appContext: Context, workerParams: WorkerParameters): Worker(
     val TAG = Constants.WORKER_TAG
     lateinit var timeTable: TimeTable
 
-    var timeTableRepository = TimeTableRepository()
+    var timeTableRepository = TimeTableRepository(applicationContext)
 
     override fun doWork(): Result {
 
